@@ -1,0 +1,180 @@
+[
+  {
+    "metadata": {
+      "catalogid": "scsj_zqydgk",
+      "name": "月度概况",
+      "excel": "xlsx",
+      "pagetype": null,
+      "subname": "2020-08",
+      "tabkey": "tab1",
+      "csskey": [],
+      "pagesize": -1,
+      "pageno": 0,
+      "pagecount": 0,
+      "recordcount": 0,
+      "showrecordcount": false,
+      "header": "",
+      "footer": "\n  \n    \t <table><tr><td class=\"link1\" style=\"color: #FF0000;\">\n  \t\t说明：2018年1月1日起，原国债及地方政府债分开展示，同时增加政策性金融债、政府支持债券及创新创业可转换债券等新品种，同时资产证券化产品统计口径由证券数量调整为产品数量，2018年之前的历史数据仍按原分类标准展示。  \n  \t\t</td></tr></table>\n  \n\n  ",
+      "reporttype": null,
+      "tabcss": null,
+      "conditions": [
+        {
+          "label": "查询月份",
+          "name": "txtQueryDate",
+          "hidden": "0",
+          "defaultValue": "2020-08",
+          "labelstyle": "1",
+          "required": "false",
+          "inputType": "month",
+          "typeAhead": "",
+          "options": null,
+          "property": null,
+          "maxlength": null,
+          "otherProperties": null
+        },
+        {
+          "label": "类别",
+          "name": "tjzqlb",
+          "hidden": "1",
+          "defaultValue": "M",
+          "labelstyle": "1",
+          "required": "false",
+          "inputType": "text",
+          "typeAhead": "",
+          "options": null,
+          "property": null,
+          "maxlength": null,
+          "otherProperties": null
+        }
+      ],
+      "colStyle": {
+        "lbmc": {
+          "width": "33%",
+          "align": "left",
+          "group": "false"
+        },
+        "cjje": {
+          "width": "16.5%",
+          "align": "right",
+          "group": "false"
+        },
+        "cjl": {
+          "width": "16.5%",
+          "align": "right",
+          "group": "false"
+        }
+      },
+      "cols": {
+        "lbmc": "证券类别",
+        "cjje": "成交金额<br>(万元)",
+        "cjl": "成交量<br>(万张)"
+      },
+      "colspan": 0,
+      "notes": null,
+      "topHeader": ""
+    },
+    "data": [
+      {
+        "lbmc": "债券现货",
+        "cjje": "19,458,287.32",
+        "cjl": "128,809.98"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;国债",
+        "cjje": "541.43",
+        "cjl": "5.44"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;地方政府债",
+        "cjje": "3.70",
+        "cjl": "0.03"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;政策性金融债",
+        "cjje": "445,614.12",
+        "cjl": "4,439.29"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;政府支持债券",
+        "cjje": "29,895.00",
+        "cjl": "300.00"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;企业债",
+        "cjje": "21,840.17",
+        "cjl": "221.93"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;公司债",
+        "cjje": "1,575,051.52",
+        "cjl": "15,690.60"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;可交换公司债",
+        "cjje": "4,733.89",
+        "cjl": "43.75"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;可转债",
+        "cjje": "15,674,249.87",
+        "cjl": "93,109.74"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;非公开发行公司债券",
+        "cjje": "1,319,908.27",
+        "cjl": "12,766.86"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;非公开发行可交换公司债券",
+        "cjje": "251,153.58",
+        "cjl": "909.17"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;证券公司次级债",
+        "cjje": "135,295.73",
+        "cjl": "1,323.13"
+      },
+      {
+        "lbmc": "债券回购",
+        "cjje": "68,788,382.40",
+        "cjl": "688,660.26"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;质押式回购",
+        "cjje": "68,553,165.70",
+        "cjl": "685,531.65"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;质押式协议回购",
+        "cjje": "235,216.70",
+        "cjl": "3,128.60"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;质押式三方回购",
+        "cjje": "",
+        "cjl": ""
+      },
+      {
+        "lbmc": "ABS",
+        "cjje": "459,006.79",
+        "cjl": "4,794.19"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;企业资产支持证券",
+        "cjje": "320,662.72",
+        "cjl": "3,382.19"
+      },
+      {
+        "lbmc": "&nbsp;&nbsp;不动产投资信托(REITs)",
+        "cjje": "138,344.07",
+        "cjl": "1,412.00"
+      },
+      {
+        "lbmc": "汇总",
+        "cjje": "88,705,676.52",
+        "cjl": "822,264.43"
+      }
+    ],
+    "error": null
+  }
+]

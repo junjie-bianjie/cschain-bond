@@ -2,8 +2,8 @@ package service
 
 import (
 	"cschain-bond/api"
-	"cschain-bond/entity"
-	"cschain-bond/gorm"
+	"cschain-bond/dao"
+	"cschain-bond/models"
 	"cschain-bond/types"
 	"cschain-bond/utils"
 	"encoding/json"
@@ -47,7 +47,7 @@ func Second() {
 	nftData := api.QueryNfts("yoeu")
 
 	nameIdMap := slice2Map()
-	txs := make([]entity.BondTransaction, 0)
+	txs := make([]models.BondTransaction, 0)
 
 	// construct ever row of data, then push ever data in slice
 	denomId := nftData.DenomId
@@ -84,7 +84,7 @@ func Second() {
 			repurchaseCategory = data[2]
 		}
 
-		tx := entity.BondTransaction{
+		tx := models.BondTransaction{
 			NftId: nftId,
 			// TODO SourceType ,Visible when demand is determined
 			SourceType:         0,
@@ -111,13 +111,13 @@ func Second() {
 func slice2Map() map[string]int {
 	var res = make(map[string]int)
 
-	var b gorm.BondVariety
+	var b dao.BondVariety
 	bs := b.FindAll()
 	for _, v := range bs {
 		res[v.Name] = v.ID
 	}
 
-	var r gorm.RepurchaseVariety
+	var r dao.RepurchaseVariety
 	rs := r.FindAll()
 	for _, v := range rs {
 		res[v.Name] = v.ID
@@ -125,7 +125,7 @@ func slice2Map() map[string]int {
 	return res
 }
 
-func BatchInsert(bondTxs []entity.BondTransaction) {
+func BatchInsert(bondTxs []models.BondTransaction) {
 	db := utils.GetConnection()
 	defer db.Close()
 

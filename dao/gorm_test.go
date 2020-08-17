@@ -1,27 +1,27 @@
-package gorm_test
+package dao_test
 
 import (
-	"cschain-bond/entity"
-	"cschain-bond/gorm"
+	"cschain-bond/dao"
+	"cschain-bond/models"
 	"cschain-bond/utils"
 	"fmt"
 	"testing"
 )
 
 func TestFindAll(t *testing.T) {
-	var b gorm.BondVariety
+	var b dao.BondVarietyDao
 	bs := b.FindAll()
 	fmt.Print(bs)
 
 	fmt.Println("=================")
-	var r gorm.RepurchaseVariety
+	var r dao.RepurchaseVarietyDao
 	rs := r.FindAll()
 	fmt.Print(rs)
 }
 
 func TestInsert(t *testing.T) {
 	db := utils.GetConnection()
-	user := entity.BondVarietyDimension{
+	user := models.BondVarietyDimension{
 		Name:     "cjj",
 		ParentId: 1,
 		Level:    1,
@@ -32,5 +32,5 @@ func TestInsert(t *testing.T) {
 
 func TestCreateTable(t *testing.T) {
 	db := utils.GetConnection()
-	db.CreateTable(&entity.BondTransaction{})
+	db.CreateTable(&models.BondTransaction{})
 }

@@ -1,20 +1,6 @@
-package entity
+package models
 
 import "time"
-
-type BondRepurchaseVarietyDimension struct {
-	ID       int `gorm:"primary_key"`
-	Name     string
-	ParentId uint
-	Level    int
-}
-
-type BondVarietyDimension struct {
-	ID       int `gorm:"primary_key"`
-	Name     string
-	ParentId uint
-	Level    int
-}
 
 type BondTransaction struct {
 	ID                 int `gorm:"primary_key"`

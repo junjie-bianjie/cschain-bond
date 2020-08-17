@@ -3,26 +3,35 @@ package service
 import (
 	"cschain-bond/api"
 	"cschain-bond/dao"
+	"cschain-bond/logger"
 	"cschain-bond/models"
 	"cschain-bond/types"
 	"cschain-bond/utils"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 )
 
-func Start() {
-	bz := utils.GetFromUrl("http://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_zqydgk&TABKEY=tab1&txtQueryDate=2020-08")
-	bonds := utils.BzToBonds(bz)
+func UploadByNFT() {
+	bz, err := utils.GetFromUrl("http://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=scsj_zqydgk&TABKEY=tab1&txtQueryDate=2020-08")
+	if err != nil {
+		logger.Error(fmt.Sprintf("fetch: %v\n", err))
+		return
+	}
+
+	bonds, err := utils.BzToBonds(bz)
+	if err != nil {
+		logger.Error(fmt.Sprintf("unmarshalJson: %v\n", err))
+		return
+	}
 
 	var tokenData types.TokenData
-	utils.ParseToResult(bonds, &tokenData)
+	utils.Parse2TokenData(bonds, &tokenData)
 	tokenDataBz, err := json.Marshal(tokenData)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "unmarshalJson: %v\n", err)
-		os.Exit(1)
+		logger.Error(fmt.Sprintf("unmarshalJson: %v\n", err))
+		return
 	}
 
 	// use sdk to IssueDenom, MintNFT
@@ -30,23 +39,23 @@ func Start() {
 	denomName := strings.ToLower(utils.RandStringOfLength(4))
 	schema := utils.GetScheme()
 	if err = issueDenom(denomID, denomName, schema); err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("issueDenom failed: %v\n", err))
+		return
 	}
 
 	tokenID := strings.ToLower(utils.RandStringOfLength(7))
 	tokenName := strings.ToLower(utils.RandStringOfLength(7))
 	if err = mintNFT(denomID, tokenID, tokenName, string(tokenDataBz)); err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("mintNFT failed: %v\n", err))
+		return
 	}
 }
 
-func Second() {
+func DataCollation() {
 	// TODO query collection by restApi
 	nftData := api.QueryNfts("yoeu")
 
-	nameIdMap := slice2Map()
+	nameIdMap := bondAndRepurchase2Map()
 	txs := make([]models.BondTransaction, 0)
 
 	// construct ever row of data, then push ever data in slice
@@ -57,8 +66,8 @@ func Second() {
 
 	var tokenData types.TokenData
 	if err := json.Unmarshal([]byte(nftData.TokenDataStr), &tokenData); err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("unmarshalJson: %v\n", err))
+		return
 	}
 
 	market := tokenData.Report.FixedValueHeader.Value
@@ -69,11 +78,12 @@ func Second() {
 			var err error
 			amount, err = strconv.ParseFloat(data[0], 64)
 			if err != nil {
-				// TODO hanle the error
-				panic(err)
+				logger.Error("parseFloat failed", logger.String("err", err.Error()))
+				return
 			}
 		}
 
+		// TODO out_bond exception of data
 		// get bondCategoryName or repurchaseCategory from data ex[]
 		var bondCategoryName, repurchaseCategory string
 		if len(data[1]) != 0 {
@@ -102,22 +112,21 @@ func Second() {
 		}
 		txs = append(txs, tx)
 	}
-	// TODO 批量写入
-	BatchInsert(txs)
 
+	BatchInsert(txs)
 }
 
 // ex[{1 国债 1 3} {2 地方政府债 0 2001} {3 政策性金融债 2 5}] -> [国债:1,地方政府债:2,政策性金融债:3]
-func slice2Map() map[string]int {
+func bondAndRepurchase2Map() map[string]int {
 	var res = make(map[string]int)
 
-	var b dao.BondVariety
+	var b dao.BondVarietyDao
 	bs := b.FindAll()
 	for _, v := range bs {
 		res[v.Name] = v.ID
 	}
 
-	var r dao.RepurchaseVariety
+	var r dao.RepurchaseVarietyDao
 	rs := r.FindAll()
 	for _, v := range rs {
 		res[v.Name] = v.ID

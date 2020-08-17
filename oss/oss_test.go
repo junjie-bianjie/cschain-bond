@@ -15,8 +15,8 @@ func TestListObject(t *testing.T) {
 }
 
 func TestUploadFile(t *testing.T) {
-	filename := "/Users/bianjie/go/src/cschain-bond/temp.json"
-	err := oss.UploadFile(filename)
+	filename := "/Users/bianjie/go/src/cschain-bond/scripts/schema.sql"
+	err := oss.UploadFile(filename, filename)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,8 +24,8 @@ func TestUploadFile(t *testing.T) {
 }
 
 func TestDownloadFile(t *testing.T) {
-	filename := "/Users/bianjie/go/src/cschain-bond/temp.json"
-	err := oss.DownloadFile(filename)
+	filename := "/Users/bianjie/go/src/cschain-bond/scripts/schema.sql"
+	err := oss.DownloadFile(filename, filename)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestDownloadFile(t *testing.T) {
 }
 
 func TestDeleteFile(t *testing.T) {
-	filename := "/Users/bianjie/go/src/cschain-bond/temp.json"
+	filename := "Users/bianjie/go/src/cschain-bond/scripts/schema.sql"
 	err := oss.DeleteFile(filename)
 	if err != nil {
 		t.Fatal(err)

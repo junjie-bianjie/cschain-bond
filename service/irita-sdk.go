@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// TODO remove the account to the correct position
 	baseTx = sdk.BaseTx{
 		//From:     s.Account().Name,
 		From: "v1",
@@ -29,7 +30,6 @@ func issueDenom(denomID, denomName, schema string) error {
 
 	_, err := client.NFT.IssueDenom(issueReq, baseTx)
 	if err != nil {
-		// TODO handle the error
 		return err
 	}
 
@@ -47,7 +47,6 @@ func mintNFT(denomID, tokenID, tokenName, tokenData string) error {
 
 	_, err := client.NFT.MintNFT(mintReq, baseTx)
 	if err != nil {
-		// TODO handle the error
 		return err
 	}
 

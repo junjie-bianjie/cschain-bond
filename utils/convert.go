@@ -3,23 +3,20 @@ package utils
 import (
 	"cschain-bond/types"
 	"encoding/json"
-	"fmt"
-	"os"
 	"strings"
 )
 
-func BzToBonds(bz []byte) types.Bonds {
+func BzToBonds(bz []byte) (types.Bonds, error) {
 	var bonds types.Bonds
 	err := json.Unmarshal(bz, &bonds)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "unmarshalJson: %v\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 
-	return bonds
+	return bonds, nil
 }
 
-func ParseToResult(bonds types.Bonds, tokenData *types.TokenData) {
+func Parse2TokenData(bonds types.Bonds, tokenData *types.TokenData) {
 	// init the result of 深交所
 	tokenData.Visible = true
 	tokenData.Report.Header = []string{"成交金额", "债券类别", "回购类别"}

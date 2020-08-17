@@ -1,6 +1,7 @@
 package oss
 
 import (
+	"cschain-bond/logger"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -26,13 +27,13 @@ func init() {
 	sess, err = session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(accessKeyId, accessKeySercret, ""),
 		Endpoint:         aws.String(endpoint),
-		Region:           aws.String(endpoints.AwsPartitionID),
+		Region:           aws.String(endpoints.CnNorth1RegionID),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(false),
 	})
 
 	if err != nil {
-		// TODO handle the error
+		logger.Error("connection s3 failed", logger.String("err", err.Error()))
 		panic(err)
 	}
 }
@@ -42,8 +43,8 @@ func ListBucket() {
 
 	result, err := svc.ListBuckets(nil)
 	if err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to list buckets, %v", err))
+		return
 	}
 
 	fmt.Println("Buckets:")
@@ -63,8 +64,8 @@ func ListObjects() {
 	resp, err := svc.ListObjects(params)
 
 	if err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to list items in bucket %q, %v", bucket, err))
+		return
 	}
 
 	for _, item := range resp.Contents {
@@ -76,11 +77,11 @@ func ListObjects() {
 	}
 }
 
-func UploadFile(filename string) error {
-	file, err := os.Open(filename)
+func UploadFile(originFilePath, desFilename string) error {
+	file, err := os.Open(originFilePath)
 	if err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to open file %q, %v", originFilePath, err))
+		return err
 	}
 	defer file.Close()
 
@@ -90,7 +91,7 @@ func UploadFile(filename string) error {
 		// Can also use the `filepath` standard library package to modify the
 		// filename as need for an S3 object key. Such as turning absolute path
 		// to a relative path.
-		Key: aws.String(filename),
+		Key: aws.String(desFilename),
 		// The file to be uploaded. io.ReadSeeker is preferred as the Uploader
 		// will be able to optimize memory when uploading large content. io.Reader
 		// is supported, but will require buffering of the reader's bytes for
@@ -98,21 +99,19 @@ func UploadFile(filename string) error {
 		Body: file,
 	})
 	if err != nil {
-		// TODO handle the error
-		fmt.Printf("Unable to upload %q to %q, %v\n", filename, bucket, err)
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to upload %q to %q, %v\n", desFilename, bucket, err))
+		return err
 	}
 
-	// TODO use log to print
-	fmt.Printf("Successfully uploaded %q to %q\n", filename, bucket)
+	logger.Info(fmt.Sprintf("Successfully uploaded %q to %q\n", desFilename, bucket))
 	return nil
 }
 
-func DownloadFile(item string) error {
-	file, err := os.Create(item)
+func DownloadFile(item, localFilePath string) error {
+	file, err := os.Create(localFilePath)
 	if err != nil {
-		// TODO handle the error
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to open file %q, %v", item, err))
+		return err
 	}
 	defer file.Close()
 
@@ -122,13 +121,11 @@ func DownloadFile(item string) error {
 		Key:    aws.String(item),
 	})
 	if err != nil {
-		// TODO handle the error
-		fmt.Printf("Unable to download item %q, %v\n", item, err)
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to download item %q, %v\n", item, err))
+		return err
 	}
 
-	// TODO use log to print
-	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
+	logger.Info(fmt.Sprint("Downloaded ", file.Name(), numBytes, "bytes"))
 	return nil
 }
 
@@ -140,9 +137,8 @@ func DeleteFile(obj string) error {
 		Key:    aws.String(obj),
 	})
 	if err != nil {
-		// TODO handle the error
-		fmt.Printf("Unable to delete object %q from bucket %q, %v\n", obj, bucket, err)
-		panic(err)
+		logger.Error(fmt.Sprintf("Unable to delete object %q from bucket %q, %v\n", obj, bucket, err))
+		return err
 	}
 
 	err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
@@ -150,12 +146,10 @@ func DeleteFile(obj string) error {
 		Key:    aws.String(obj),
 	})
 	if err != nil {
-		// TODO handle the error
-		fmt.Printf("Error occurred while waiting for object %q to be deleted, %v\n", obj, err)
-		panic(err)
+		logger.Error(fmt.Sprintf("Error occurred while waiting for object %q to be deleted, %v\n", obj, err))
+		return err
 	}
 
-	// TODO use log to print
-	fmt.Printf("Object %q successfully deleted\n", obj)
+	logger.Info(fmt.Sprintf("Object %q successfully deleted\n", obj))
 	return nil
 }

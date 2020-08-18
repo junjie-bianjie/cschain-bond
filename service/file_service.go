@@ -1,14 +1,18 @@
 package service
 
 import (
+	"context"
 	"cschain-bond/logger"
 	"cschain-bond/oss"
 	"cschain-bond/utils"
 	"encoding/hex"
 	"fmt"
+	preserver "gitlab.bianjie.ai/csrb-bond/pre-server/protos"
 	"gitlab.bianjie.ai/csrb-bond/umbral-go/capsule"
 	"gitlab.bianjie.ai/csrb-bond/umbral-go/keys"
+	"gitlab.bianjie.ai/csrb-bond/umbral-go/kfrag"
 	"gitlab.bianjie.ai/csrb-bond/umbral-go/pre"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -42,10 +46,7 @@ func init() {
 }
 
 func UploadEncryptFile(filename string) error {
-	// TODO remove the filename to the correct position
-	filename = "../scripts/0817testUpload.text"
-
-	plainText := utils.GetOriginTest()
+	plainText := utils.GetFile(filename)
 	ciphertext, capsuleData, err := pre.Encrypt(delegatorPubKey, plainText)
 	if err != nil {
 		logger.Error(err.Error())
@@ -59,22 +60,25 @@ func UploadEncryptFile(filename string) error {
 		return err
 	}
 
-	err = oss.UploadFile(filename, "0817testUpload.text")
+	err = oss.UploadFile(filename)
 	if err != nil {
 		return err
 	}
+	_ = os.Remove(filename)
 	return nil
 }
 
-func ReEncryptFile() error {
-	if err := oss.DownloadFile("0817testUpload.text", "./0817testUpload.text"); err != nil {
+func ReEncryptFile(filename, encryptFilename string) error {
+	tempFile := utils.RandStringOfLength(8)
+	if err := oss.DownloadFile(filename, tempFile); err != nil {
 		return err
 	}
 
-	bz, err := ioutil.ReadFile("./0817testUpload.text")
+	bz, err := ioutil.ReadFile(tempFile)
 	if err != nil {
 		return err
 	}
+	_ = os.Remove(tempFile)
 
 	data := strings.Split(string(bz), "#")
 	if len(data) != 2 {
@@ -83,53 +87,90 @@ func ReEncryptFile() error {
 	}
 
 	capsuleHex := data[1]
+
 	capsuleData := capsule.NewCapsule()
+	var cfragHexes []string
 	if err = capsuleData.FromHex(capsuleHex); err != nil {
 		return err
 	}
 
-	if v, err := pre.GenProxyReEncryptionKey(delegatorPrivKey, receiverPubKey); err != nil {
+	if kFrags, err := pre.GenProxyReEncryptionKey(delegatorPrivKey, receiverPubKey); err != nil {
 		return err
 	} else {
-		var cfragHexes []string
-		if res, err := pre.ReEncrypt(v, capsuleData); err != nil {
+		if len(kFrags) == 0 {
+			// todo error
+			panic(err)
+		}
+		var rk []string
+
+		for _, v := range kFrags {
+			kFragHex := v.Hex()
+			newKFrag := kfrag.NewKFrag()
+			if err := newKFrag.FromHex(kFragHex); err != nil {
+				// todo error
+				panic(err)
+			} else {
+				// todo coreect
+			}
+
+			rk = append(rk, kFragHex)
+		}
+
+		reqBody := &preserver.ReEncryptReq{
+			ReEncryptionKey: [][]byte{[]byte(rk[0])},
+			Capsule:         []byte(capsuleHex),
+		}
+
+		// 连接grpc服务器
+		conn, err := grpc.Dial("127.0.0.1:50051", grpc.WithInsecure())
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer conn.Close()
+
+		// 初始化客户端
+		c := preserver.NewPreServerClient(conn)
+		if res, err := c.ReEncrypt(context.Background(), reqBody); err != nil {
 			return err
 		} else {
-			for _, v := range res {
+			for _, v := range res.CFrags {
 				cfragHexes = append(cfragHexes, hex.EncodeToString(v))
 			}
 			// upload the reEncrypt file
-			if err = ioutil.WriteFile("./0817reEncrypt.text", []byte(string(data[0])+"#"+capsuleHex+"#"+cfragHexes[0]), os.ModePerm); err != nil {
+			if err = ioutil.WriteFile(encryptFilename, []byte(string(data[0])+"#"+capsuleHex+"#"+cfragHexes[0]), os.ModePerm); err != nil {
 				return err
 			}
-			if err = oss.UploadFile("./0817reEncrypt.text", "0817reEncrypt.text"); err != nil {
+			if err = oss.UploadFile(encryptFilename); err != nil {
 				return err
 			}
+			_ = os.Remove(encryptFilename)
 		}
 	}
 	return nil
 }
 
-func PreDecryptFile() error {
-	if err := oss.DownloadFile("0817reEncrypt.text", "./0817reEncrypt.text"); err != nil {
-		return err
+func PreDecryptFile(filename string) (string, error) {
+	tempFile := utils.RandStringOfLength(8)
+	if err := oss.DownloadFile(filename, tempFile); err != nil {
+		return "", err
 	}
 
-	bz, err := ioutil.ReadFile("./0817reEncrypt.text")
+	bz, err := ioutil.ReadFile(tempFile)
 	if err != nil {
 		logger.Error(err.Error())
-		return err
+		return "", err
 	}
+	_ = os.Remove(tempFile)
 
 	data := strings.Split(string(bz), "#")
 	if len(data) != 3 {
 		logger.Error("read the data of size must equals 3")
-		return err
+		return "", err
 	}
 	capsuleHex := data[1]
 	capsuleData := capsule.NewCapsule()
 	if err := capsuleData.FromHex(capsuleHex); err != nil {
-		return err
+		return "", err
 	}
 	//var cfragBytes [][]byte
 	//for _, v := range cfragHexes {
@@ -142,43 +183,24 @@ func PreDecryptFile() error {
 	var cfragBytes [][]byte
 	b, err := hex.DecodeString(data[2])
 	if err != nil {
-		return err
+		return "", err
 	}
+
 	cfragBytes = append(cfragBytes, b)
 	capsuleData.AttachCFragBytes(cfragBytes)
-
-	_, err = pre.Decrypt(receiverPrivKey, []byte(data[0]), capsuleData)
+	plainText, err := hex.DecodeString(data[0])
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+
+	res, err := pre.Decrypt(receiverPrivKey, plainText, capsuleData)
+	if err != nil {
+		return "", err
+	}
+	return string(res), nil
 }
 
-func TempTest() {
-	// 1. get ciphertext and capsule encrypted by delegator public key
-	plaintext := []byte("hello world!")
-	ciphertext, capsuleData, err := pre.Encrypt(delegatorPubKey, plaintext)
-	if err != nil {
-		panic(err)
-	}
+// todo encapsulation grpc client
+func GrpClient() {
 
-	// 2. generate rk
-	if v, err := pre.GenProxyReEncryptionKey(delegatorPrivKey, receiverPubKey); err != nil {
-		panic(err)
-	} else {
-		// 3. re-encrypt
-		if cfragBytes, err := pre.ReEncrypt(v, capsuleData); err != nil {
-			panic(err)
-		} else {
-			if len(cfragBytes) > 0 {
-				capsuleData.AttachCFragBytes(cfragBytes)
-			}
-			// 4. decrypt re-encryption ciphertext
-			if v, err := pre.Decrypt(receiverPrivKey, ciphertext, capsuleData); err != nil {
-				panic(err)
-			} else {
-				fmt.Println(v)
-			}
-		}
-	}
 }

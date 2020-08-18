@@ -74,13 +74,13 @@ func GetPrivKeyArmor() []byte {
 	return bz
 }
 
-func GetOriginTest() []byte {
+func GetFile(filename string) []byte {
 	path, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
-	path = filepath.Dir(path)
-	path = filepath.Join(path, "/scripts/origin.text")
+	//path = filepath.Dir(path)
+	path = filepath.Join(path, filename)
 	bz, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)

@@ -22,6 +22,15 @@ create table bond_repurchase_variety_dimension
         primary key (id)
 );
 
+-- 市场维度表
+drop table if exists market_variety_dimension
+create table market_variety_dimension
+(
+    id                  int auto_increment
+        primary key,
+    market              varchar(255) null,
+);
+
 -- 债券交易记录表
 drop table if exists bond_transaction
 create table bond_transaction
@@ -35,10 +44,11 @@ create table bond_transaction
     uri                 varchar(255) null,
     visible             tinyint(1)   null,
     amount              double       null,
-    market              varchar(255) null,
+    market              int          null,
     start_date          date         null,
     end_date            date         null,
     period_category     varchar(255) null,
     bond_category       int          null,
     repurchase_category int          null
 );
+

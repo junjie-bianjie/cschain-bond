@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"os"
+	"strings"
 )
 
 const (
@@ -55,6 +56,7 @@ func ListBucket() {
 	}
 }
 
+// ListObjects list objects in specified bucket
 func ListObjects() {
 	svc := s3.New(sess)
 
@@ -77,13 +79,18 @@ func ListObjects() {
 	}
 }
 
-func UploadFile(originFilePath, desFilename string) error {
-	file, err := os.Open(originFilePath)
+// UploadFile upload file
+func UploadFile(localFilepath string) error {
+	file, err := os.Open(localFilepath)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Unable to open file %q, %v", originFilePath, err))
+		logger.Error(fmt.Sprintf("Unable to open file %q, %v", localFilepath, err))
 		return err
 	}
 	defer file.Close()
+
+	// use short name
+	split := strings.Split(localFilepath, "/")
+	desFilename := split[len(split)-1]
 
 	uploader := s3manager.NewUploader(sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
@@ -107,6 +114,7 @@ func UploadFile(originFilePath, desFilename string) error {
 	return nil
 }
 
+// DownloadFile download item from oss to localFilePath in native
 func DownloadFile(item, localFilePath string) error {
 	file, err := os.Create(localFilePath)
 	if err != nil {
@@ -129,6 +137,7 @@ func DownloadFile(item, localFilePath string) error {
 	return nil
 }
 
+// DeleteFile obj from oss
 func DeleteFile(obj string) error {
 	svc := s3.New(sess)
 

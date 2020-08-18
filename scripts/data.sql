@@ -16,3 +16,10 @@ INSERT INTO bond_variety_dimension(name, parent_id, level) VALUES ('证券公司
 INSERT INTO bond_repurchase_variety_dimension(name, parent_id, level) VALUES ('质押式回购',0,1);
 INSERT INTO bond_repurchase_variety_dimension(name, parent_id, level) VALUES ('质押式协议回购',0,1);
 INSERT INTO bond_repurchase_variety_dimension(name, parent_id, level) VALUES ('质押式三方回购',0,1);
+
+
+-- 插入数据
+INSERT INTO market_variety_dimension(market) VALUES ('深交所');
+INSERT INTO market_variety_dimension(market) VALUES ('上交所');
+INSERT INTO market_variety_dimension(market) VALUES ('中债登');
+INSERT INTO market_variety_dimension(market) VALUES ('中证登');

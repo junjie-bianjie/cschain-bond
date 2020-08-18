@@ -12,7 +12,7 @@ const (
 	baseUrl = "http://10.1.4.248:3000"
 )
 
-// TODO common function for all denomId
+// QueryNfts common function for all denomId
 func QueryNfts(denomId string) types.NftData {
 	url := baseUrl + "/nfts?denomId=" + denomId
 	bz, err := utils.GetFromUrl(url)
@@ -28,7 +28,7 @@ func QueryNfts(denomId string) types.NftData {
 		return types.NftData{}
 	}
 
-	if len(res.Data.Data) <= 0 {
+	if len(res.Data.Data) == 0 {
 		logger.Error("the result of queryNfts is nil")
 		return types.NftData{}
 	}

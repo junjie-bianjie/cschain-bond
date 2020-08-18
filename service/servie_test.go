@@ -10,27 +10,48 @@ func TestUploadByNFT(t *testing.T) {
 }
 
 func TestDataCollation(t *testing.T) {
-	service.DataCollation()
+	service.DataCollation("yoeu")
 }
 
 func TestUploadEncryptFile(t *testing.T) {
-	service.UploadEncryptFile()
+	err := service.UploadEncryptFile("../scripts/origin.text")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestReEncryptFile(t *testing.T) {
-	service.ReEncryptFile()
+	err := service.ReEncryptFile("origin.text", "origin_encrypt.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestPreDecryptFile(t *testing.T) {
-	service.PreDecryptFile()
+	_, err := service.PreDecryptFile("0817reEncrypt.text")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func TestTemp(t *testing.T) {
-	service.UploadEncryptFile()
-	service.ReEncryptFile()
-	service.PreDecryptFile()
+func TestOnce(t *testing.T) {
+	err := service.UploadEncryptFile("../scripts/origin.text")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = service.ReEncryptFile("origin.text", "origin_encrypt.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := service.PreDecryptFile("origin_encrypt.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(res)
 }
 
-func TestTemp2(t *testing.T) {
-	service.TempTest()
+func TestTwo(t *testing.T) {
+	service.GrpClient()
 }

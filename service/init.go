@@ -20,6 +20,9 @@ const (
 	level         = "info"
 	maxTxsBytes   = 1073741824
 	gasAdjustment = 1.0
+
+	name   = "v1"
+	passwd = "YQVGsOjegu"
 )
 
 func init() {
@@ -39,9 +42,8 @@ func init() {
 		GasAdjustment: gasAdjustment,
 	})
 
-	// TODO move account/pwd to correct position
 	// import the key from privKey
-	_, err := client.Key.Import("v1", "YQVGsOjegu", string(utils.GetPrivKeyArmor()))
+	_, err := client.Key.Import(name, passwd, string(utils.GetPrivKeyArmor()))
 	if err != nil {
 		panic(err)
 	}

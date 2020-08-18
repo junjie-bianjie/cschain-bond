@@ -16,7 +16,7 @@ func TestListObject(t *testing.T) {
 
 func TestUploadFile(t *testing.T) {
 	filename := "/Users/bianjie/go/src/cschain-bond/scripts/schema.sql"
-	err := oss.UploadFile(filename, filename)
+	err := oss.UploadFile(filename)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestDownloadFile(t *testing.T) {
 }
 
 func TestDeleteFile(t *testing.T) {
-	filename := "Users/bianjie/go/src/cschain-bond/scripts/schema.sql"
+	filename := "0817reEncrypt.text"
 	err := oss.DeleteFile(filename)
 	if err != nil {
 		t.Fatal(err)

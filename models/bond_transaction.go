@@ -11,7 +11,7 @@ type BondTransaction struct {
 	Uri                string
 	Visible            bool
 	Amount             float64
-	Market             string
+	Market             int
 	StartDate          time.Time
 	EndDate            time.Time
 	PeriodCategory     string

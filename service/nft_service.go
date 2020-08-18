@@ -51,15 +51,14 @@ func UploadByNFT() {
 	}
 }
 
-func DataCollation() {
-	// TODO query collection by restApi
-	nftData := api.QueryNfts("yoeu")
+func DataCollation(denomId string) {
+	// queryNft by restApi
+	nftData := api.QueryNfts(denomId)
 
-	nameIdMap := bondAndRepurchase2Map()
+	nameIdMap := bondRepurchaseMarket2Map()
 	txs := make([]models.BondTransaction, 0)
 
 	// construct ever row of data, then push ever data in slice
-	denomId := nftData.DenomId
 	nftId := nftData.NftId
 	owner := nftData.Owner
 	tokenUri := nftData.TokenUri
@@ -70,6 +69,7 @@ func DataCollation() {
 		return
 	}
 
+	visible := tokenData.Visible
 	market := tokenData.Report.FixedValueHeader.Value
 	date := tokenData.Report.Date
 	for _, data := range tokenData.Report.Data {
@@ -101,9 +101,9 @@ func DataCollation() {
 			DenomId:            denomId,
 			Owner:              owner,
 			Uri:                tokenUri,
-			Visible:            true,
+			Visible:            visible,
 			Amount:             amount,
-			Market:             market,
+			Market:             nameIdMap[market],
 			StartDate:          utils.String2Time(date.StartDate),
 			EndDate:            utils.String2Time(date.EndDate),
 			PeriodCategory:     date.Period,
@@ -116,24 +116,29 @@ func DataCollation() {
 	BatchInsert(txs)
 }
 
-// ex[{1 国债 1 3} {2 地方政府债 0 2001} {3 政策性金融债 2 5}] -> [国债:1,地方政府债:2,政策性金融债:3]
-func bondAndRepurchase2Map() map[string]int {
+// bondAndRepurchase2Map convert the result of db(3 tables) to map
+// ex[{1 国债 1 3} {2 地方政府债 0 2001} {3 政策性金融债 2 5}] {2 深交所} -> [国债:1,地方政府债:2,政策性金融债:3,深交所:2]
+func bondRepurchaseMarket2Map() map[string]int {
 	var res = make(map[string]int)
 
 	var b dao.BondVarietyDao
-	bs := b.FindAll()
-	for _, v := range bs {
+	for _, v := range b.FindAll() {
 		res[v.Name] = v.ID
 	}
 
 	var r dao.RepurchaseVarietyDao
-	rs := r.FindAll()
-	for _, v := range rs {
+	for _, v := range r.FindAll() {
 		res[v.Name] = v.ID
+	}
+
+	var m dao.MarketVarietyDao
+	for _, v := range m.FindAll() {
+		res[v.Market] = v.Id
 	}
 	return res
 }
 
+// BatchInsert batch insert into table bond_transaction, using placeholder(?) to prevent sql injection
 func BatchInsert(bondTxs []models.BondTransaction) {
 	db := utils.GetConnection()
 	defer db.Close()
